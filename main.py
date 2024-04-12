@@ -7,7 +7,7 @@ class PlayerSymbols(Enum):
 
 
 class Board:
-    def __init__(self):
+    def __init__(self) -> None:
         self.board: list[list] = [[" " for _ in range(3)] for _ in range(3)]
 
     def draw_board(self):
@@ -15,7 +15,14 @@ class Board:
             print(" | ".join(row))
             print("-" * 9)
 
+
+class GameStateManager:
+
+    def __init__(self, board: Board) -> None:
+        self.board: list[list] = board.board
+
     def check_winner(self, row, col) -> bool:
+
         # Горизонталь
         if self.board[row].count(self.board[row][col]) == len(self.board[row]) and self.board[row][col] != " ":
             return True
@@ -38,17 +45,20 @@ class Board:
 
 
 class Player:
-    def __init__(self, symbol):
+    def __init__(self, symbol) -> None:
         self.symbol = symbol
 
 
 class Move:
-    def __init__(self, board: Board):
-        self.board = board
+    def __init__(self, board: Board) -> None:
+        self.board: list[list] = board.board
 
-    def make_move(self, player, row, col):
-        if self.board.board[row - 1][col - 1] == " ":
-            self.board.board[row - 1][col - 1] = player
+    def check_move(self, row, col) -> bool:
+        return self.board[row - 1][col - 1] == " "
+
+    def make_move(self, player, row, col) -> bool:
+        if self.check_move(row, col):
+            self.board[row - 1][col - 1] = player
             return True
         else:
             print("Слот уже занят!")
@@ -56,9 +66,10 @@ class Move:
 
 
 class TicTacToeGame:
-    def __init__(self):
+    def __init__(self) -> None:
         self.board = Board()
         self.move = Move(self.board)
+        self.game_state_manager = GameStateManager(self.board)
         self.players = [Player(PlayerSymbols.X), Player(PlayerSymbols.O)]
         self.turn = 0
 
@@ -70,11 +81,11 @@ class TicTacToeGame:
                 f"Игрок {current_player}, введите координаты хода в формате 'строка,столбец': ").split(','))
 
             if self.move.make_move(current_player, row, col):
-                if self.board.check_winner(row - 1, col - 1):
+                if self.game_state_manager.check_winner(row - 1, col - 1):
                     self.board.draw_board()
                     print(f"Игрок {current_player} победил!")
                     break
-                elif self.board.check_draw():
+                elif self.game_state_manager.check_draw():
                     self.board.draw_board()
                     print("Ничья!")
                     break
